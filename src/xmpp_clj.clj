@@ -14,14 +14,6 @@
 
 (def available-presence (Presence. Presence$Type/available))
 
-(def chat-message-type-filter (MessageTypeFilter. Message$Type/chat))
-
-(defn packet-listener [conn processor]
-  (proxy 
-      [PacketListener] 
-      []
-    (processPacket [packet] (processor conn packet))))
-
 (defn mapify-error [e]
   (if (nil? e) 
     nil
@@ -40,22 +32,16 @@
     :type (keyword (str (.getType m)))}
    (catch Exception e (println e) {})))
 
-(defn parse-address [from]
+(defn create-message [to message-body]
   (try
-   (first (.split from "/"))
-   (catch Exception e (println e) from)))
-
-(defn create-reply [from-message-map to-message-body]
-  (try
-   (let [to (:from from-message-map)
-	 rep (Message.)]
+   (let [rep (Message.)]
      (.setTo rep to)
-     (.setBody rep (str to-message-body))
+     (.setBody rep (str message-body))
      rep)
    (catch Exception e (println e))))
 
-(defn reply [from-message-map to-message-body conn]
-  (.sendPacket conn (create-reply from-message-map to-message-body)))
+(defn send [conn to message-body]
+  (.sendPacket conn (create-message to message-body)))
 
 (defn with-message-map [handler]
   (fn [conn packet]
@@ -67,12 +53,24 @@
 (defn wrap-responder [handler]
   (fn [conn message]
     (let [resp (handler message)]
-      (reply message resp conn))))
+      (send conn (:from message) resp))))
 
-(defn start-bot
-  "Defines and starts an instant messaging bot that will respond to incoming
-   messages. start-bot takes 2 parameters, the first is a map representing 
-   the data needed to make a connection to the jabber server:
+(defn add-message-listener [conn fn]
+  (.addPacketListener conn
+                      (proxy [PacketListener] []
+                        (processPacket [packet]
+                          ((with-message-map (wrap-responder fn)) conn packet)))
+                      (MessageTypeFilter. Message$Type/chat)))
+
+(defn add-presence-listener [conn fn]
+  conn)
+
+(defn make-connection
+  "Defines and logs in to an xmpp connection, optionally registering event
+   listeners for incoming messages and presence notifications. The first
+   parameter is a map representing the data needed to make a connection to
+   the jabber server (only username and password are required, gtalk is
+   assumed by default:
    
    connnect-info example:
    {:host \"talk.google.com\"
@@ -80,10 +78,11 @@
     :username \"testclojurebot@gmail.com\"
     :password \"clojurebot12345\"}
 
-   The second parameter expects a single-arg function, which is passed
-   a map representing a message on receive. Return a string from this
-   function to pass a message back to the sender, or nil for no
-   response
+   Following this one of two keyword arguments may be given, each of which
+   expects a single argument function. The first is for a default message
+   listener, which is passed a map representing a message on receive.
+   Return a string from this function to pass a message back to the sender,
+   or nil for no response
 
    received message map example (nils are possible where n/a):
    {:body
@@ -97,22 +96,17 @@
     :type <Type of message: normal, chat, group_chat, headline, error.
            see javadoc for org.jivesoftware.smack.packet.Message>}
    "
-  [connect-info packet-processor]
-  (let [un (:username connect-info)
-	pw (:password connect-info)
-	host (:host connect-info)
-	domain (:domain connect-info)
-        port (get connect-info :port 5222)
-	connect-config (ConnectionConfiguration. host port domain)
-	conn (XMPPConnection. connect-config)]
-    (.connect conn)
-    (.login conn un pw)
-    (.sendPacket conn available-presence)
-    (.addPacketListener
-     conn
-     (packet-listener conn (with-message-map (wrap-responder packet-processor)))
-     chat-message-type-filter)
-    conn))
+  [{:keys [username password host domain port]
+    :or   {host   "talk.google.com"
+           domain "gmail.com"
+           port   5222}}
+   & {:keys [message presence]}]
+  (doto (XMPPConnection. (ConnectionConfiguration. host port domain))
+    (.connect)
+    (.login username password)
+    (.sendPacket available-presence)
+    (add-message-listener message)
+    (add-presence-listener presence)))
 
-(defn stop-bot [#^XMPPConnection conn]
+(defn close-connection [#^XMPPConnection conn]
   (.disconnect conn))
