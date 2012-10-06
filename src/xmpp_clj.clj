@@ -15,9 +15,7 @@
 (def available-presence (Presence. Presence$Type/available))
 
 (defn mapify-error [e]
-  (if (nil? e) 
-    nil
-    {:code (.getCode e) :message (.getMessage e)}))
+  (when e {:code (.getCode e) :message (.getMessage e)}))
 
 (defn mapify-message [#^Message m]
   (try
