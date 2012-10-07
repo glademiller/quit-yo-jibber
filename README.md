@@ -1,38 +1,21 @@
-# xmpp-clj
 
-xmpp-clj allows you to write simple jabber bots in idiomatic clojure by providing a lightweight wrapper around the [smack](http://www.igniterealtime.org/projects/smack/) library.
+# quit-yo-jibber jabber client
+
+quit-yo-jibber jabber client is a clojure wrapper around jive software's [smack](http://www.igniterealtime.org/projects/smack/) talk xmpp library. Branched from [xmpp-clj](http://github.com/zkim/xmpp-clj), this version aims to be more general, allowing for chat clients as well as chatbots.
 
 ## Lein
-    [xmpp-clj "0.2.1"]
+
 
 ## Usage
-Create a temporary jabber account for your bot.  I've used gmail here, but there are a bunch of free providers
-<br />  
-  
-Create a leiningen project and cd into the project directory
+Add quit-yo-jibber to your deps (project.clj):
+    [quit-yo-jibber "0.3.0"]
 
-    lein new mybot
-    cd ./mybot
-<br />  
-  
-Add xmpp-clj to your deps (project.clj):
-
-
-    (defproject testxmpp "1.0.0-SNAPSHOT"
-      :description "FIXME: write"
-      :dependencies [[org.clojure/clojure "1.1.0"]
-                     [org.clojure/clojure-contrib "1.1.0"]
-                     [xmpp-clj "0.1.0"]]
-      :dev-dependencies [[leiningen/lein-swank "1.2.0-SNAPSHOT"]])
-<br />
-  
-Open up src/mybot/core.clj and require the xmpp lib:
-
+require the core
     (ns mybot.core
-      (:require [xmpp-clj :as xmpp]))
+      (:require [quit-yo-jibber :as xmpp]))
 <br />
 
-Define your connection params:
+Define your connection params (host, domain and port optional):
 
     ;; Connection Info
     (def connect-info {:username "testclojurebot@gmail.com"
@@ -40,38 +23,36 @@ Define your connection params:
                        :host "talk.google.com"
                        :domain "gmail.com"})
 <br />
-		       
-Add some logic, all this bot does is respond back to the sender with his/her message:
-    
-    ;; Important stuff
-    (defn handle-message [message]
-      (let [body (:body message)
-            from-user (:from-name message)]
-        (str "Hi " from-user ", you sent me '" body "'")))
+
+Create a function to respond to a message:
+    (defn handle-message [msg]
+      (str "You said " (:body msg)))
+
+Now make a connection with some callbacks defined:
+    (def conn (make-connection connect-info 
+                 :messages (var handle-message)
+                 :presence (fn [pre] (println "New presence info: " (prn-str pre))))
 
 <br />
 
-Define the bot:
 
-    (defonce my-bot (xmpp/start-bot connect-info (var handle-message)))
-
-<br />
-
-Stop the bot
-
-    (xmpp/stop-bot my-bot)
-<br />
     
 Next, fire up your chat client, add your new buddy, and send him a message.  The response should look someting like this:
 
 > me: hello chatbot  
 
-> chatbot: Hi zachary.kim@gmail.com, you sent me 'hello chatbot'
+> chatbot: You said hello chatbot
 <br />  
+
+
+When you're done with a connection, you can log out and close it like so:
+    (xmpp/close-connection conn)
+
+<br />
 
 ## Problems?
 
-Open up an [issue](http://github.com/zkim/xmpp-clj/issues)
+Open up an [issue](/issues)
 
 ## License
 

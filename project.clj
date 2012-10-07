@@ -1,4 +1,4 @@
-(defproject xmpp-clj "0.2.1"
-  :description "A lightweight clojure wrapper around the smack jabber/XMPP library"
-  :dependencies [[org.clojure/clojure "1.3.0"]
-		 [jivesoftware/smack "3.1.0"]])
+(defproject quit-yo-jibber "0.3.0"
+  :description "Quit-yo-jibber Jabber library, a wrapper around smack"
+  :dependencies [[org.clojure/clojure "1.4.0"]
+		 [jivesoftware/smack "3.2.2"]])
