@@ -33,6 +33,10 @@ Next, fire up your chat client, add your new buddy, and send him a message.  The
 > me: hello chatbot  
 > chatbot: You said hello chatbot
 
+If you want to send a message unprompted, without first receiving one, you can use the send function like so:
+
+    (send conn "person@gmail.com" "I wouldn't like not to speak unless spoken to")
+
 You can get roster information like so (see also the roster and available functions):
 
     (online conn)
@@ -40,11 +44,11 @@ You can get roster information like so (see also the roster and available functi
     
 And you can test for online status and such with the online? and away? predicates like so:
 
-    (online? "me@example.com")
+    (online? conn "me@example.com")
     => false ;; because it's a fake email address. Of course they're not online.
 
 When you're done with a connection, you can log out and close it like so:
-    (xmpp/close-connection conn)
+    (close-connection conn)
 
 ## Problems?
 
