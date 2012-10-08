@@ -3,22 +3,20 @@
 The quit-yo-jibber jabber client is a clojure wrapper around jive software's [smack](http://www.igniterealtime.org/projects/smack/) talk xmpp library. Forked from [xmpp-clj](http://github.com/zkim/xmpp-clj), this version aims to be more general, allowing for chat clients as well as chatbots.
 
 ## Usage
+Add quit-yo-jibber to your deps (project.clj):
 
-    Add quit-yo-jibber to your deps (project.clj):
-        [quit-yo-jibber "0.3.0"]
+    [quit-yo-jibber "0.3.0"]
+    
+and use the main file
 
-require the core
+    (ns my.namespace
+        (:require [quit-yo-jibber :refer :all]))
 
-    (ns mybot.core
-      (:require [quit-yo-jibber :as xmpp]))
-
-Define your connection params (host, domain and port optional):
+Define your connection params (host, domain and port are optional arguments, but it defaults to gtalk settings):
 
     ;; Connection Info
-    (def connect-info {:username "testclojurebot@gmail.com"
-                       :password "clojurebot12345"
-                       :host "talk.google.com"
-                       :domain "gmail.com"})
+    (def connect-info {:username "some.bot@gmail.com"
+                       :password "*****"})
 
 Create a function to respond to a message:
 
