@@ -4,12 +4,9 @@
   (:import [org.jivesoftware.smack ConnectionConfiguration
                                    XMPPConnection]))
 
-(def connection-info {:username "mrs.doyle.teabot@gmail.com"
-                      :password "mXA7oaC7"
-                      :host     "talk.google.com"
-                      :domain   "gmail.com"})
-
 (defn echo [message]
+  (reset! message-store message)
+  (println "From " (:jid message) ", got: " (:body message))
   (:body message))
 
 (defn make-connection
@@ -47,7 +44,7 @@
     :or   {host   "talk.google.com"
            domain "gmail.com"
            port   5222}}
-   & {:keys [message presence]}]
+   & {:keys [message roster-at]}]
   (doto (XMPPConnection. (ConnectionConfiguration. host port domain))
     (.connect)
     (.login username password)
@@ -64,3 +61,33 @@
    response handling system"
   [conn to message-body]
   (message/send-message conn to message-body))
+
+(defn roster
+  "List all of the users known about by this account, regardless of
+   availability"
+  [conn]
+  (let [roster  (.getRoster conn)
+        entries (.getEntries roster)]
+    (map (memfn toString) entries)))
+
+(defn online?
+  "Whether a given user is online and visible to the logged in account"
+  [conn user]
+  (.isAvailable (.getPresence (.getRoster conn) user)))
+
+(defn online
+  "A list of everyone this account knows to currently be online"
+  [conn]
+  (map (memfn toString) (seq (.getEntries (.getRoster conn)))))
+
+(defn away?
+  "Whether a given user is either away or offline"
+  [conn user]
+  (or (not (online? conn user))
+      (.isAway (.getPresence (.getRoster conn) user))))
+
+(defn available
+  "A list of everyone this account knows to be online and not marked
+   as away"
+  [conn]
+  (filter #(not (away? conn %)) (online conn)))
