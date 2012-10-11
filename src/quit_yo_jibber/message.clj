@@ -43,5 +43,5 @@
     (.addPacketListener
      (proxy [PacketListener] []
        (processPacket [packet]
-         ((with-message-map (with-responder (if (var? f) (var f) f))) conn packet)))
+         ((with-message-map (with-responder f)) conn packet)))
      (MessageTypeFilter. Message$Type/chat))))
