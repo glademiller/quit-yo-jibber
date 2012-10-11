@@ -4,11 +4,6 @@
   (:import [org.jivesoftware.smack ConnectionConfiguration
                                    XMPPConnection]))
 
-(defn echo [message]
-  (reset! message-store message)
-  (println "From " (:jid message) ", got: " (:body message))
-  (:body message))
-
 (defn make-connection
   "Defines and logs in to an xmpp connection, optionally registering event
    listeners for incoming messages and presence notifications. The first
@@ -17,9 +12,7 @@
    assumed by default:
 
    connnect-info example:
-   {:host \"talk.google.com\"
-    :domain \"gmail.com\"
-    :username \"testclojurebot@gmail.com\"
+   {:username \"testclojurebot@gmail.com\"
     :password \"clojurebot12345\"}
 
    Following this one of two keyword arguments may be given, each of which
@@ -29,16 +22,15 @@
    or nil for no response
 
    received message map example (nils are possible where n/a):
-   {:body
-    :subject
-    :thread <Id used to correlate several messages, such as a converation>
-    :from <entire from id, ex. zachary.kim@gmail.com/Zachary KiE0124793>
-    :from-name <Just the 'name' from the 'from', ex. zachary.kim@gmail.com>
-    :to <To whom the message was sent, i.e. this bot>
-    :packet-id <donno>
-    :error <a map representing the error, if present>
-    :type <Type of message: normal, chat, group_chat, headline, error.
-           see javadoc for org.jivesoftware.smack.packet.Message>}
+   {:body    ; message text
+    :subject ; a subject, usually set in chat rooms
+    :thread  ; id used to correlate several messages, such as a converation
+    :jid     ; entire from id, e.g. me@example.com/GTalk E0124793
+    :from    ; email address of the sender
+    :to      ; to whom the message was sent, i.e. this bot
+    :error   ; a map representing the error, if present
+    :type    ; type of message: normal, chat, group_chat, headline, error.
+   }         ; - see javadoc for org.jivesoftware.smack.packet.Message
    "
   [{:keys [username password host domain port]
     :or   {host   "talk.google.com"
