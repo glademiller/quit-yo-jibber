@@ -36,12 +36,12 @@
     :or   {host   "talk.google.com"
            domain "gmail.com"
            port   5222}}
-   & {:keys [message roster-at]}]
-  (doto (XMPPConnection. (ConnectionConfiguration. host port domain))
-    (.connect)
-    (.login username password)
-    (presence/set-availability! :available)
-    (message/add-message-listener message)))
+   message]
+  (let [conn (doto (XMPPConnection. (ConnectionConfiguration. host port domain))
+               (.connect)
+               (.login username password)
+               (presence/set-availability! :available))]
+    (message/add-message-listener conn (partial message conn))))
 
 (defn close-connection
   "Log out of and close an active connection"
