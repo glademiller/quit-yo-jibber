@@ -5,7 +5,7 @@ The quit-yo-jibber jabber client is a clojure wrapper around jive software's [sm
 ## Usage
 Add quit-yo-jibber to your deps (project.clj):
 
-    [quit-yo-jibber "0.3.2"]
+    [quit-yo-jibber "0.4.0"]
 
 and use the main file
 
@@ -23,13 +23,12 @@ put into version control.
 
 Create a function to respond to a message:
 
-    (defn handle-message [msg]
+    (defn handle-message [conn msg]
       (str "You said " (:body msg)))
 
 Now make a connection with some callbacks defined (The var around handle-message means that you can re-define it and the underlying java listener will call your newly defined function, rather than staying on the old implementation):
 
-    (def conn (make-connection connect-info
-                 :messages (var handle-message))
+    (def conn (make-connection connect-info (var handle-message))
 
 Next, fire up your chat client, add your new buddy, and send him a message.  The response should look someting like this:
 
