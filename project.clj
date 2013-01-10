@@ -1,4 +1,4 @@
-(defproject quit-yo-jibber "0.4.1"
+(defproject quit-yo-jibber "0.4.2-SNAPSHOT"
   :url "http://github.com/AdamClements/quit-yo-jibber/"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
