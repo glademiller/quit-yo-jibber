@@ -83,3 +83,13 @@
    as away"
   [conn]
   (filter #(not (away? conn %)) (online conn)))
+
+(defn on-their-phone?
+  "Whether this user's jid implies they may be mobile (on an android device)"
+  [conn user]
+  (boolean (re-find #"from=\".*?@.*?/android.*?\"" (.toXML (.getPresence (.getRoster conn) user)))))
+
+(defn on-their-phone
+  "All the people who have android phone jids, so are probably mobile"
+  [conn]
+  (filter (partial on-their-phone? conn) (online conn)))
