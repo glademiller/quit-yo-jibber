@@ -30,3 +30,8 @@
        (processPacket [packet]
          ((with-presence-map f) conn packet)))
      (MessageTypeFilter. Presence$Type/subscribe))))
+
+(defn request-presence [conn addr]
+  (let [p (Presence. Presence$Type/subscribe)]
+    (.setTo p addr)
+    (doto conn (.sendPacket p))))
