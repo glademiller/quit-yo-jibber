@@ -17,11 +17,17 @@
 (defn with-presence-map [f]
   (fn [presence] (mapify-presence (f presence))))
 
-(def presence-types {:available   (Presence. Presence$Type/available)
-                     :unavailable (Presence. Presence$Type/unavailable)})
+(def presence-types {:available   Presence$Type/available
+                     :unavailable Presence$Type/unavailable})
 
-(defn set-availability! [conn type]
-  (doto conn (.sendPacket (type presence-types))))
+(defn set-availability!
+  [conn type & [status & [addr]]]
+  (let [packet (Presence. (type presence-types))]
+    (when-not (nil? status)
+      (doto packet (.setStatus status)))
+    (when-not (nil? addr)
+      (doto packet (.setTo addr)))
+    (doto conn (.sendPacket packet))))
 
 (defn add-presence-listener [conn f]
   (let [roster (.getRoster conn)]
@@ -35,6 +41,6 @@
                           (f (mapify-presence presence))))))))
 
 (defn subscribe-presence [conn addr]
-  (let [p (Presence. Presence$Type/subscribe)]
-    (doto p (.setTo addr))
-    (doto conn (.sendPacket p))))
+  (let [presence (Presence. Presence$Type/subscribe)]
+    (doto presence (.setTo addr))
+    (doto conn (.sendPacket presence))))
