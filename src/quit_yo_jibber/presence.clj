@@ -1,15 +1,15 @@
 (ns quit-yo-jibber.presence
-  (:import [org.jivesoftware.smack PacketListener]
+  (:import [org.jivesoftware.smack RosterListener]
            [org.jivesoftware.smack.packet Presence
-                                          Presence$Type]
-           [org.jivesoftware.smack.filter MessageTypeFilter]))
+                                          Presence$Type]))
 
 
 (defn mapify-presence [#^Presence m]
   (try
-    {:mode    (.getMode m)
+    {:jid     (first (clojure.string/split (.getFrom m) #"/"))
      :status  (.getStatus m)
-     :type    (.getType m)
+     :mode    (str (.getMode m))
+     :type    (str (.getType m))
      :online? (.isAvailable m)
      :away?   (.isAway m)}
     (catch Exception e (println e) {})))
@@ -24,14 +24,17 @@
   (doto conn (.sendPacket (type presence-types))))
 
 (defn add-presence-listener [conn f]
-  (doto conn
-    (.addPacketListener
-     (proxy [PacketListener] []
-       (processPacket [packet]
-         ((with-presence-map f) conn packet)))
-     (MessageTypeFilter. Presence$Type/subscribe))))
+  (let [roster (.getRoster conn)]
+    (doto roster
+      (.addRosterListener
+       (proxy [RosterListener] []
+         (entriesAdded [_])
+         (entriesDeleted [_])
+         (entriesUpdated [_])
+         (presenceChanged [presence]
+                          (f (mapify-presence presence))))))))
 
 (defn request-presence [conn addr]
   (let [p (Presence. Presence$Type/subscribe)]
-    (.setTo p addr)
+    (doto p (.setTo addr))
     (doto conn (.sendPacket p))))
