@@ -8,8 +8,8 @@
   (try
     {:jid     (first (clojure.string/split (.getFrom m) #"/"))
      :status  (.getStatus m)
-     :mode    (str (.getMode m))
      :type    (str (.getType m))
+     :mode    (str (.getMode m))
      :online? (.isAvailable m)
      :away?   (.isAway m)}
     (catch Exception e (println e) {})))
@@ -34,7 +34,7 @@
          (presenceChanged [presence]
                           (f (mapify-presence presence))))))))
 
-(defn request-presence [conn addr]
+(defn subscribe-presence [conn addr]
   (let [p (Presence. Presence$Type/subscribe)]
     (doto p (.setTo addr))
     (doto conn (.sendPacket p))))
