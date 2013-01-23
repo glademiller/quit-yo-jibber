@@ -21,11 +21,11 @@
                      :unavailable Presence$Type/unavailable})
 
 (defn set-availability!
-  [conn type & [status & [addr]]]
+  [conn type & [status addr]]
   (let [packet (Presence. (type presence-types))]
-    (when-not (nil? status)
+    (when status
       (doto packet (.setStatus status)))
-    (when-not (nil? addr)
+    (when addr
       (doto packet (.setTo addr)))
     (doto conn (.sendPacket packet))))
 
