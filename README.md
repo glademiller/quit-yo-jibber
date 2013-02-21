@@ -5,7 +5,7 @@ The quit-yo-jibber jabber client is a clojure wrapper around jive software's [sm
 ## Usage
 Add quit-yo-jibber to your deps (project.clj):
 
-    [quit-yo-jibber "0.4.0"]
+    [quit-yo-jibber "0.4.2"]
 
 and use the main file
 
