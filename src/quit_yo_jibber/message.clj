@@ -20,10 +20,9 @@
    :type    (keyword (str (.getType m)))})
 
 (defn create-message [to message-body]
-  (let [rep (Message.)]
-    (.setTo rep to)
-    (.setBody rep (str message-body))
-    rep))
+  (doto (Message.)
+    (.setTo to)
+    (.setBody (str message-body))))
 
 (defn send-message [conn to message-body]
   (.sendPacket conn (create-message to message-body)))
