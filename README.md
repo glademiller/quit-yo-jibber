@@ -54,21 +54,21 @@ When you're done with a connection, you can log out and close it like so:
 
 ## Changelog
 
-### 1.4.3
+### 0.4.3
 
 * Set sent message type to chat - this means that asterisk *bold* and underbar _underline_ formatting are properly understood by the gtalk client
 * Filter out only messages which contain a body, rather than chat type messages which were actually typing notifications causing extra events to fire in previous versions
 
-### 1.4.2
+### 0.4.2
 
 * Fix presence listeners
 * Added experimental ability to set-availability (experimental - not in core namespace but accessible in quit-yo-jibber.presence)
 
-### 1.4.1
+### 0.4.1
 
 * Add in API for detecting whether users are active on their android phone or a PC
 
-### 1.4.0
+### 0.4.0
 
 * API revision - major release
 
