@@ -4,7 +4,9 @@
            [org.jivesoftware.smack.packet Message
                                           Message$Type]
            [org.jivesoftware.smack.util   StringUtils]
-           [org.jivesoftware.smack.filter MessageTypeFilter]))
+           [org.jivesoftware.smack.filter MessageTypeFilter
+                                          AndFilter
+                                          PacketFilter]))
 
 (defn error-map [e]
   (when e {:code (.getCode e) :message (.getMessage e)}))
@@ -44,4 +46,8 @@
      (proxy [PacketListener] []
        (processPacket [packet]
          ((with-message-map (with-responder f)) conn packet)))
-     (MessageTypeFilter. Message$Type/chat))))
+     (doto (AndFilter.)
+       (.addFilter (MessageTypeFilter. Message$Type/chat))
+       (.addFilter (reify PacketFilter
+                     (accept [this p]
+                       (boolean (.getBody #^Message p)))))))))
