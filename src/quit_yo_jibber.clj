@@ -93,3 +93,20 @@
   "All the people who have android phone jids, so are probably mobile"
   [conn]
   (filter (partial on-their-phone? conn) (online conn)))
+
+(defn send-question
+  "Flags include timeout, default unlimited, but will reset if they go offline"
+  [conn to message-body callback & flags]
+  (apply message/send-question conn to message-body callback flags))
+
+(defn awaiting-response?
+  ""
+  [conn from]
+  false)
+
+(defn on-no-pending-responses
+  "Wait until there are no pending responses on the given connection and
+   fires the function once. Useful for cleanly closing the connection once
+   everybody has finished talking to your bot"
+  [conn f]
+  nil)
