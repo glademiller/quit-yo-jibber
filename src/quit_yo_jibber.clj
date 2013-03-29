@@ -15,9 +15,8 @@
    {:username \"testclojurebot@gmail.com\"
     :password \"clojurebot12345\"}
 
-   Following this one of two keyword arguments may be given, each of which
-   expects a single argument function. The first is for a default message
-   listener, which is passed a map representing a message on receive.
+   Optionally you may provide a default incoming message handler which
+   expects a function which takes a connection and a message map.
    Return a string from this function to pass a message back to the sender,
    or nil for no response
 
@@ -28,20 +27,34 @@
     :jid     ; entire from id, e.g. me@example.com/GTalk E0124793
     :from    ; email address of the sender
     :to      ; to whom the message was sent, i.e. this bot
-    :error   ; a map representing the error, if present
-    :type    ; type of message: normal, chat, group_chat, headline, error.
    }         ; - see javadoc for org.jivesoftware.smack.packet.Message
+
+   You may also provide a presence listener which takes a connection and a
+   map representing the presence change event.
+   {:from    ; email address of the person who this concerns
+    :jid     ; entire from id, e.g. me@example.com/GTalk_E242435
+    :status  ; the user's display status
+    :mode    ; TODO
+    :online?
+    :away?
+   }
    "
-  [{:keys [username password host domain port]
-    :or   {host   "talk.google.com"
-           domain "gmail.com"
-           port   5222}}
-   message]
-  (let [conn (doto (XMPPConnection. (ConnectionConfiguration. host port domain))
-               (.connect)
-               (.login username password)
-               (presence/set-availability! :available))]
-    (message/add-message-listener conn (partial message conn))))
+  ([{:keys [username password host domain port]
+     :or   {host   "talk.google.com"
+            domain "gmail.com"
+            port   5222}}
+    message-fn presence-fn]
+     (let [conn (doto (XMPPConnection. (ConnectionConfiguration. host port domain))
+                  (.connect)
+                  (.login username password)
+                  (presence/set-availability! :available))]
+       (when message-fn  (message/add-message-listener   conn (partial message-fn  conn)))
+       (when presence-fn (presence/add-presence-listener conn (partial presence-fn conn)))))
+
+  ([config message-fn]
+     (make-connection config message-fn nil))
+  ([config]
+     (make-connection config nil nil)))
 
 (defn close-connection
   "Log out of and close an active connection"
@@ -95,18 +108,22 @@
   (filter (partial on-their-phone? conn) (online conn)))
 
 (defn send-question
-  "Flags include timeout, default unlimited, but will reset if they go offline"
-  [conn to message-body callback & flags]
-  (apply message/send-question conn to message-body callback flags))
+  "Send a message to a user and set a one-off callback for when the user
+   responds to that message, skipping the default handler"
+  [conn to message-body callback]
+  (message/send-question conn to message-body callback))
 
 (defn awaiting-response?
-  ""
+  "Returns a boolean stating whether a response is currently pending for the
+   given user on the given connection"
   [conn from]
-  false)
+  (message/awaiting-response? conn from))
 
 (defn on-no-pending-responses
   "Wait until there are no pending responses on the given connection and
    fires the function once. Useful for cleanly closing the connection once
-   everybody has finished talking to your bot"
+   everybody has finished talking to your bot.
+
+   f should be a function taking a connection"
   [conn f]
-  nil)
+  (message/on-no-pending-responses conn f))
