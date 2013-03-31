@@ -48,8 +48,8 @@
                   (.connect)
                   (.login username password)
                   (presence/set-availability! :available))]
-       (when message-fn  (message/add-message-listener   conn (partial message-fn  conn)))
-       (when presence-fn (presence/add-presence-listener conn (partial presence-fn conn)))))
+       (when message-fn  (message/add-message-listener   conn message-fn))
+       (when presence-fn (presence/add-presence-listener conn presence-fn))))
 
   ([config message-fn]
      (make-connection config message-fn nil))

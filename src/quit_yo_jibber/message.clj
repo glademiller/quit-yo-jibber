@@ -53,7 +53,7 @@
   (fn [conn message]
     (let [handler  (or (get-in @responses [conn (:from message)])
                        default-handler)
-          response (handler message)]
+          response (handler conn message)]
       (send-message conn (:from message) response))))
 
 (defn awaiting-response? [conn from]
