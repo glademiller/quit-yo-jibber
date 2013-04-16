@@ -5,7 +5,7 @@ The quit-yo-jibber jabber client is a clojure wrapper around jive software's [sm
 ## Usage
 Add quit-yo-jibber to your deps (project.clj):
 
-    [quit-yo-jibber "0.4.3"]
+    [quit-yo-jibber "0.5.0"]
 
 and use the main file
 
@@ -26,18 +26,28 @@ Create a function to respond to a message:
     (defn handle-message [conn msg]
       (str "You said " (:body msg)))
 
+You may also optionally create a function to deal with people changing presence:
+
+    (defn handle-presence [conn pre]
+      (log :info (:from pre) " is now " (if (:online? pre) "online" "offline"))
+
 Now make a connection with some callbacks defined (The var around handle-message means that you can re-define it and the underlying java listener will call your newly defined function, rather than staying on the old implementation):
 
-    (def conn (make-connection connect-info (var handle-message))
+    (def conn (make-connection connect-info (var handle-message) (var handle-presence))
 
 Next, fire up your chat client, add your new buddy, and send him a message.  The response should look someting like this:
 
 > me: hello chatbot
 > chatbot: You said hello chatbot
 
-If you want to send a message unprompted, without first receiving one, you can use the send function like so:
+If you want to send a message unprompted, without first receiving one, you can use the send-message function like so:
 
-    (send conn "person@gmail.com" "I wouldn't like not to speak unless spoken to")
+    (send-message conn "person@gmail.com" "I wouldn't like not to speak unless spoken to")
+
+If you want to ask a particular user a question and deal with a response, there's a convenient send-question which you can give a function to call when it receives a response. You can ask further questions or await further responses within the body of the callback. If you wish to await a further response without sending another message, send a nil message-body.
+
+    (defn cookie? [conn msg] (if (= (:body msg) "yes") "COOKIE" "Oh, okay."))
+    (send-question conn "person@gmail.com" "Would you like a cookie?" cookie?)
 
 You can get roster information like so (see also the roster and available functions):
 
@@ -53,6 +63,11 @@ When you're done with a connection, you can log out and close it like so:
     (close-connection conn)
 
 ## Changelog
+
+### 0.5.0
+
+* Add in send-question and awaiting-response? commands to the API for easily asking questions and receiving responses from individual users.
+* Move presence handlers into the core API. You may now optionally specify a presence handler function as the last argument to make-connection.
 
 ### 0.4.3
 

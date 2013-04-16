@@ -23,18 +23,18 @@
    received message map example (nils are possible where n/a):
    {:body    ; message text
     :subject ; a subject, usually set in chat rooms
-    :thread  ; id used to correlate several messages, such as a converation
+    :thread  ; id used to correlate several messages, such as a conversation
     :jid     ; entire from id, e.g. me@example.com/GTalk E0124793
     :from    ; email address of the sender
     :to      ; to whom the message was sent, i.e. this bot
    }         ; - see javadoc for org.jivesoftware.smack.packet.Message
 
-   You may also provide a presence listener which takes a connection and a
-   map representing the presence change event.
+   You may also provide a presence listener which takes a connection returns
+   a map representing the presence change event (undocumented fields subject
+   to change).
    {:from    ; email address of the person who this concerns
     :jid     ; entire from id, e.g. me@example.com/GTalk_E242435
     :status  ; the user's display status
-    :mode    ; TODO
     :online?
     :away?
    }
@@ -43,18 +43,13 @@
      :or   {host   "talk.google.com"
             domain "gmail.com"
             port   5222}}
-    message-fn presence-fn]
+    & [message-fn presence-fn]]
      (let [conn (doto (XMPPConnection. (ConnectionConfiguration. host port domain))
                   (.connect)
                   (.login username password)
                   (presence/set-availability! :available))]
        (when message-fn  (message/add-message-listener   conn message-fn))
-       (when presence-fn (presence/add-presence-listener conn presence-fn))))
-
-  ([config message-fn]
-     (make-connection config message-fn nil))
-  ([config]
-     (make-connection config nil nil)))
+       (when presence-fn (presence/add-presence-listener conn presence-fn)))))
 
 (defn close-connection
   "Log out of and close an active connection"
@@ -109,7 +104,8 @@
 
 (defn send-question
   "Send a message to a user and set a one-off callback for when the user
-   responds to that message, skipping the default handler"
+   responds to that message, skipping the default handler. Callback
+   should take a conn and message body"
   [conn to message-body callback]
   (message/send-question conn to message-body callback))
 
@@ -118,12 +114,3 @@
    given user on the given connection"
   [conn from]
   (message/awaiting-response? conn from))
-
-(defn on-no-pending-responses
-  "Wait until there are no pending responses on the given connection and
-   fires the function once. Useful for cleanly closing the connection once
-   everybody has finished talking to your bot.
-
-   f should be a function taking a connection"
-  [conn f]
-  (message/on-no-pending-responses conn f))

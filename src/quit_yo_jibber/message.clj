@@ -49,6 +49,8 @@
   (send-message conn to message-body))
 
 ;; Return a function which will either call the provided default handler
+;; or the handler stored for a given user if currently awaiting a
+;; response
 (defn with-responder [default-handler]
   (fn [conn message]
     (let [handler  (or (get-in @responses [conn (:from message)])
@@ -59,11 +61,12 @@
 (defn awaiting-response? [conn from]
   (boolean (get-in @responses [conn from])))
 
-(defn on-no-pending-responses [conn f]
-  (add-watch responses :empty
-             (fn [_ _ _ updated-responses]
-               (when (empty? (get updated-responses conn))
-                 (f conn)))))
+(comment "Experimental"
+ (defn on-no-pending-responses [conn f]
+   (add-watch responses :empty
+              (fn [_ _ _ updated-responses]
+                (when (empty? (get updated-responses conn))
+                  (f conn))))))
 
 (defn with-message-map [handler]
   (fn [conn packet]
