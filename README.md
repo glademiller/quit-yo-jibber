@@ -5,7 +5,7 @@ The quit-yo-jibber jabber client is a clojure wrapper around jive software's [sm
 ## Usage
 Add quit-yo-jibber to your deps (project.clj):
 
-    [quit-yo-jibber "0.5.0"]
+    [quit-yo-jibber "0.6.0"]
 
 and use the main file
 
@@ -49,7 +49,7 @@ If you want to ask a particular user a question and deal with a response, there'
     (defn cookie? [conn msg] (if (= (:body msg) "yes") "COOKIE" "Oh, okay."))
     (send-question conn "person@gmail.com" "Would you like a cookie?" cookie?)
 
-You can get roster information like so (see also the roster and available functions):
+You can get roster information like so (see also the roster, available, on-their-phone and on-their-desktop functions):
 
     (online conn)
     => ("me@example.com", "person@gmail.com", "friend@yahoo.com")
@@ -63,6 +63,11 @@ When you're done with a connection, you can log out and close it like so:
     (close-connection conn)
 
 ## Changelog
+### 0.6.0
+* Bugfix: online? predicate
+* Bugfix: make-connection properly supports optionally providing message and presence handlers
+* Improved on-their-phone list and predicate, taking into account more client types
+* Added in on-their-desktop list and predicate
 
 ### 0.5.0
 
