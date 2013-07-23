@@ -45,51 +45,16 @@
     (doto conn (.sendPacket presence))))
 
 
+(defn- all-jids-for-user
+  [conn user]
+  (map (memfn getFrom) (iterator-seq (.getPresences (.getRoster conn) user))))
 
+(def ^:private resource-id {:phone   ["Messaging" "android_talk"]
+                            :desktop ["messaging-smgmail" "messaging-AChromeExtension"
+                                      "gmail" "BitlBee" "Kopete" "Adium"]})
 
+(defn- resource-type? [conn typeof user]
+  (re-matches (re-pattern (str ".*?/(" (clojure.string/join "|" (typeof resource-id)) ").*?")) user))
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+(defn all-jids-for-user-of-type [conn typeof user]
+  (seq (filter (partial resource-type? conn typeof) (all-jids-for-user conn user))))

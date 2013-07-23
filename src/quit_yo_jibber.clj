@@ -91,16 +91,6 @@
   [conn]
   (filter #(not (away? conn %)) (online conn)))
 
-(defn on-their-phone?
-  "Whether this user's jid implies they may be mobile (on an android device)"
-  [conn user]
-  (boolean (re-find #"from=\".*?@.*?/android.*?\"" (.toXML (.getPresence (.getRoster conn) user)))))
-
-(defn on-their-phone
-  "All the people who have android phone jids, so are probably mobile"
-  [conn]
-  (filter (partial on-their-phone? conn) (online conn)))
-
 (defn send-question
   "Send a message to a user and set a one-off callback for when the user
    responds to that message, skipping the default handler. Callback
@@ -113,3 +103,23 @@
    given user on the given connection"
   [conn from]
   (message/awaiting-response? conn from))
+
+(defn on-their-phone?
+  "Whether this user's jid implies they may be mobile (on an android device)"
+  [conn user]
+  (boolean (presence/all-jids-for-user-of-type conn :phone user)))
+
+(defn on-their-phone
+  "All the people who have android phone jids, so are probably mobile"
+  [conn]
+  (filter (partial on-their-phone? conn) (online conn)))
+
+(defn on-their-desktop?
+  "Whether this user's jid implies they may be mobile (on an android device)"
+  [conn user]
+  (boolean (presence/all-jids-for-user-of-type conn :desktop user)))
+
+(defn on-their-desktop
+  "All the people who have android desktop jids, so are probably mobile"
+  [conn]
+  (filter (partial on-their-desktop? conn) (online conn)))
