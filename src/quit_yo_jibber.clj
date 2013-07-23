@@ -49,7 +49,8 @@
                   (.login username password)
                   (presence/set-availability! :available))]
        (when message-fn  (message/add-message-listener   conn message-fn))
-       (when presence-fn (presence/add-presence-listener conn presence-fn)))))
+       (when presence-fn (presence/add-presence-listener conn presence-fn))
+       conn)))
 
 (defn close-connection
   "Log out of and close an active connection"
