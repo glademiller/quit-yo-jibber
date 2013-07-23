@@ -67,9 +67,7 @@
   "List all of the users known about by this account, regardless of
    availability"
   [conn]
-  (let [roster  (.getRoster conn)
-        entries (.getEntries roster)]
-    (map (memfn toString) entries)))
+  (map (memfn getUser) (.getEntries (.getRoster conn))))
 
 (defn online?
   "Whether a given user is online and visible to the logged in account"
@@ -79,7 +77,7 @@
 (defn online
   "A list of everyone this account knows to currently be online"
   [conn]
-  (map (memfn toString) (seq (.getEntries (.getRoster conn)))))
+  (filter (partial online? conn) (roster conn)))
 
 (defn away?
   "Whether a given user is either away or offline"
