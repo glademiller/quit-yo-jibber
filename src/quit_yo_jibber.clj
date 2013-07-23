@@ -120,6 +120,6 @@
   (boolean (presence/all-jids-for-user-of-type conn :desktop user)))
 
 (defn on-their-desktop
-  "All the people who have android desktop jids, so are probably mobile"
+  "All the people who have desktop jids, so are probably not mobile"
   [conn]
   (filter (partial on-their-desktop? conn) (online conn)))
