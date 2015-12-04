@@ -20,7 +20,7 @@
      :code  (.getCode e)}))
 
 (defn message-map [#^Message m]
-  {:from    (StringUtils/parseBareAddress (.getFrom m))
+  {:from    (.getFrom m)
    :to      (.getTo m)
    :subject (.getSubject m)
    :body    (.getBody m)
@@ -80,7 +80,7 @@
        (processPacket [packet]
          ((with-message-map (with-responder f)) conn packet)))
      (doto (AndFilter.)
-       (.addFilter (MessageTypeFilter. Message$Type/chat))
+       (.addFilter (MessageTypeFilter/CHAT))
        (.addFilter (reify PacketFilter
                      (accept [this p]
                        (boolean (.getBody #^Message p)))))))))

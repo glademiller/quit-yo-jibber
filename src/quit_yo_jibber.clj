@@ -1,8 +1,8 @@
 (ns quit-yo-jibber
   (:require [quit-yo-jibber.message  :as message ]
             [quit-yo-jibber.presence :as presence])
-  (:import [org.jivesoftware.smack ConnectionConfiguration
-                                   XMPPConnection]))
+  (:import  [org.jivesoftware.smack.tcp XMPPTCPConnection
+                                        XMPPTCPConnectionConfiguration]))
 
 (defn make-connection
   "Defines and logs in to an xmpp connection, optionally registering event
@@ -44,17 +44,17 @@
             domain "gmail.com"
             port   5222}}
     & [message-fn presence-fn]]
-     (let [conn (doto (XMPPConnection. (ConnectionConfiguration. host port domain))
-                  (.connect)
-                  (.login username password)
-                  (presence/set-availability! :available))]
-       (when message-fn  (message/add-message-listener   conn message-fn))
-       (when presence-fn (presence/add-presence-listener conn presence-fn))
+     (let [configBuilder (XMPPTCPConnectionConfiguration/builder)
+           config (.build (.setServiceName (.setUsernameAndPassword configBuilder username password) host))
+           conn (XMPPTCPConnection. config)]
+       (.connect conn)
+       (.login conn)
+       (when message-fn  (message/add-message-listener conn message-fn))
        conn)))
 
 (defn close-connection
   "Log out of and close an active connection"
-  [#^XMPPConnection conn]
+  [#^XMPPTCPConnection conn]
   (.disconnect conn))
 
 (defn send-message
@@ -63,33 +63,33 @@
   [conn to message-body]
   (message/send-message conn to message-body))
 
-(defn roster
-  "List all of the users known about by this account, regardless of
-   availability"
-  [conn]
-  (map (memfn getUser) (.getEntries (.getRoster conn))))
+; (defn roster
+;   "List all of the users known about by this account, regardless of
+;    availability"
+;   [conn]
+;   (map (memfn getUser) (.getEntries (.getRoster conn))))
 
-(defn online?
-  "Whether a given user is online and visible to the logged in account"
-  [conn user]
-  (.isAvailable (.getPresence (.getRoster conn) user)))
+; (defn online?
+;   "Whether a given user is online and visible to the logged in account"
+;   [conn user]
+;   (.isAvailable (.getPresence (.getRoster conn) user)))
 
-(defn online
-  "A list of everyone this account knows to currently be online"
-  [conn]
-  (filter (partial online? conn) (roster conn)))
+; (defn online
+;   "A list of everyone this account knows to currently be online"
+;   [conn]
+;   (filter (partial online? conn) (roster conn)))
 
-(defn away?
-  "Whether a given user is either away or offline"
-  [conn user]
-  (or (not (online? conn user))
-      (.isAway (.getPresence (.getRoster conn) user))))
+; (defn away?
+;   "Whether a given user is either away or offline"
+;   [conn user]
+;   (or (not (online? conn user))
+;       (.isAway (.getPresence (.getRoster conn) user))))
 
-(defn available
-  "A list of everyone this account knows to be online and not marked
-   as away"
-  [conn]
-  (filter #(not (away? conn %)) (online conn)))
+; (defn available
+;   "A list of everyone this account knows to be online and not marked
+;    as away"
+;   [conn]
+;   (filter #(not (away? conn %)) (online conn)))
 
 (defn send-question
   "Send a message to a user and set a one-off callback for when the user
@@ -104,22 +104,22 @@
   [conn from]
   (message/awaiting-response? conn from))
 
-(defn on-their-phone?
-  "Whether this user's jid implies they may be mobile (on an android device)"
-  [conn user]
-  (boolean (presence/all-jids-for-user-of-type conn :phone user)))
+; (defn on-their-phone?
+;   "Whether this user's jid implies they may be mobile (on an android device)"
+;   [conn user]
+;   (boolean (presence/all-jids-for-user-of-type conn :phone user)))
 
-(defn on-their-phone
-  "All the people who have android phone jids, so are probably mobile"
-  [conn]
-  (filter (partial on-their-phone? conn) (online conn)))
+; (defn on-their-phone
+;   "All the people who have android phone jids, so are probably mobile"
+;   [conn]
+;   (filter (partial on-their-phone? conn) (online conn)))
 
-(defn on-their-desktop?
-  "Whether this user's jid implies they may be mobile (on an android device)"
-  [conn user]
-  (boolean (presence/all-jids-for-user-of-type conn :desktop user)))
+; (defn on-their-desktop?
+;   "Whether this user's jid implies they may be mobile (on an android device)"
+;   [conn user]
+;   (boolean (presence/all-jids-for-user-of-type conn :desktop user)))
 
-(defn on-their-desktop
-  "All the people who have desktop jids, so are probably not mobile"
-  [conn]
-  (filter (partial on-their-desktop? conn) (online conn)))
+; (defn on-their-desktop
+;   "All the people who have desktop jids, so are probably not mobile"
+;   [conn]
+;   (filter (partial on-their-desktop? conn) (online conn)))
